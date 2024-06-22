@@ -43,10 +43,12 @@ function App() {
       return;
     }
     const walletAddress = address.payments;
+    console.log('Attempting to register with:', { username, address: walletAddress, signature });
     try {
-      const response = await register(username, walletAddress, walletAddress, signature);
+      const response = await register(username, walletAddress, signature);
       setMessage('User registered successfully');
     } catch (error) {
+      console.error('Registration error:', error);
       setMessage('Registration error: ' + error.message);
     }
   };
@@ -59,7 +61,7 @@ function App() {
     const walletAddress = address.payments;
     try {
       const signedMessage = await signMsg(walletAddress, walletAddress);
-      const response = await login(walletAddress, signedMessage, walletAddress);
+      const response = await login(walletAddress, signedMessage);
       setMessage('User logged in successfully');
     } catch (error) {
       if (error.response && error.response.data.error === 'User not found') {

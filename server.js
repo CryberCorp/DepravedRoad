@@ -21,32 +21,64 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 const UserSchema = new mongoose.Schema({
+  _id: String, // Utilisation d'un ID personnalisé
   username: { type: String, required: true, unique: true },
   address: { type: String, required: true },
-  signedMessage: { type: String, required: true },
-  signature: { type: String, required: true } // Stockée sous forme hachée
+  signature: { type: String, required: true }, // Stockée sous forme hachée
+  lastLogin: { type: Number, required: true },  // Dernière date de connexion
+  lastLoginTimezone: { type: String, required: true } // Dernier fuseau horaire de connexion
 });
 
 const User = mongoose.model('User', UserSchema);
 
+// Fonction pour générer l'ID personnalisé
+const generateCustomId = async () => {
+  const userCount = await User.countDocuments({});
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const increment = userCount % 10000;  // Reste de la division par 10,000
+  const letterIndex = Math.floor(userCount / 10000);  // Quotient de la division par 10,000
+  const suffix = letters[letterIndex];  // Obtenir la lettre correspondante
+  const incrementString = increment.toString().padStart(4, '0');  // Remplir avec des zéros à gauche
+
+  if (letterIndex >= letters.length) {
+    throw new Error('User limit exceeded');
+  }
+
+  return `${incrementString}${suffix}`;
+};
+
 app.post('/register', async (req, res) => {
-  const { username, address, signedMessage, signature } = req.body;
-  console.log('Received registration request:', { username, address, signedMessage, signature });
+  const { username, address, signature } = req.body;
+  console.log('Received registration request:', { username, address, signature });
 
   try {
     const hashedSignature = await bcrypt.hash(signature, 10); // Hacher la signature
-    const newUser = await User.create({ username, address, signedMessage: address, signature: hashedSignature });
+
+    // Obtenir le timestamp du serveur
+    const timestamp = Math.floor(Date.now() / 1000);  // Obtenir l'horodatage Unix
+
+    // Générer un ID personnalisé
+    const customId = await generateCustomId();
+
+    const newUser = await User.create({
+      _id: `${customId}-${timestamp}`,
+      username,
+      address,
+      signature: hashedSignature,
+      lastLogin: timestamp,  // Utiliser le même horodatage pour la dernière connexion
+      lastLoginTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Utiliser le fuseau horaire actuel
+    });
     console.log('User registered:', newUser);
     res.status(201).json(newUser);
   } catch (err) {
-    console.error('Registration error:', err);
+    console.error('Registration error:', err.message); // Ajout de logs détaillés
     res.status(400).json({ error: err.message });
   }
 });
 
 app.post('/login', async (req, res) => {
-  const { address, signature, message } = req.body;
-  console.log('Received login request:', { address, signature, message });
+  const { address, signature } = req.body;
+  console.log('Received login request:', { address, signature });
 
   const user = await User.findOne({ address });
   if (!user) {
@@ -55,13 +87,6 @@ app.post('/login', async (req, res) => {
   }
 
   console.log('User found:', user);
-  console.log('Stored signedMessage:', user.signedMessage);
-  console.log('Provided message:', message);
-
-  if (user.signedMessage !== message) {
-    console.error('Message mismatch:', user.signedMessage, message);
-    return res.status(400).json({ error: 'Message mismatch' });
-  }
 
   const isSignatureMatch = await bcrypt.compare(signature, user.signature); // Comparer les signatures
   if (!isSignatureMatch) {
@@ -70,21 +95,17 @@ app.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  
+  // Mettre à jour la dernière date de connexion et le fuseau horaire
+  const lastLogin = Math.floor(Date.now() / 1000);  // Obtenir l'horodatage Unix
+  const lastLoginTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;  // Obtenir le fuseau horaire
+
+  user.lastLogin = lastLogin;
+  user.lastLoginTimezone = lastLoginTimezone;
+  await user.save();
+
   console.log('User logged in:', user);
   res.json({ token });
-});
-
-app.post('/update-address', async (req, res) => {
-  const { username, address } = req.body;
-
-  try {
-    const user = await User.findOneAndUpdate({ username }, { $set: { address: address } }, { new: true });
-    console.log('Address updated for user:', user);
-    res.json(user);
-  } catch (err) {
-    console.error('Update address error:', err);
-    res.status(400).json({ error: err.message });
-  }
 });
 
 const PORT = process.env.PORT || 5000;

@@ -2,8 +2,8 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000';
 
-export const register = async (username, address, signedMessage, signature) => {
-  return axios.post(`${API_URL}/register`, { username, address, signedMessage, signature });
+export const register = async (username, address, signature) => {
+  return axios.post(`${API_URL}/register`, { username, address, signature });
 };
 
 export const login = async (address, signature, message) => {
