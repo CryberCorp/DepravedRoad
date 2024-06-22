@@ -1,0 +1,60 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@ordzaar/ord-connect": "^5.10.0",
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "assert": "^2.1.0",
+    "axios": "^1.7.2",
+    "bitcoinjs-lib": "^6.1.6",
+    "bitcoinjs-message": "^2.2.0",
+    "crypto-browserify": "^3.12.0",
+    "events": "^3.3.0",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "process": "^0.11.10",
+    "react": "^18.3.1",
+    "react-app-rewired": "^2.2.1",
+    "react-dom": "^18.3.1",
+    "react-scripts": "5.0.1",
+    "readable-stream": "^4.5.2",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "typescript": "^5.4.5",
+    "url": "^0.11.3",
+    "validator": "^13.12.0",
+    "web-vitals": "^4.1.1"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

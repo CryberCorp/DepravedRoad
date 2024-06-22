@@ -1,0 +1,24 @@
+# Node.js
+node_modules/
+
+# Environnement
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Autres fichiers et dossiers à ignorer
+/secrets/
+*.secret
+config/*.json
+
+# VSCode
+.vscode/*
+
+.turbo
